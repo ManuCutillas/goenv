@@ -1,4 +1,4 @@
-const goenv = require('../index.js');
+const goenv = require('goenv');
 const options = 
 {
         dirname: __dirname,
@@ -11,7 +11,6 @@ const options =
 
 const env = goenv.init(options);
 console.log('initial',global.env);
-
 
 const extended = goenv.extend({
 	propertyExtended: {
