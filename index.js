@@ -1,6 +1,7 @@
 const glob = require('glob');
 const path = require('path');
 const callsite = require('callsite');
+const fs = require('fs');
 module.exports = function () 
 {
   let _merge = {};
@@ -219,15 +220,64 @@ module.exports = function ()
 
     function extend(ext)
     {
-        let _newExtend = global.env;
-        _newExtend = _extend(_newExtend, ext);
-        global.env =  _newExtend;
+        let _newExtend;
+        if(typeof global.env !== 'undefined')
+        {
+            _newExtend = global.env;
+            _newExtend = _extend(_newExtend, ext);
+            global.env =  _newExtend;
+
+        }
+        else
+        {
+            _newExtend = "global.env doesn´t exist, initializes goenv first.";
+        };
         return _newExtend;
+    };
+
+    function writeEnvFile()
+    {
+        let options;
+        let done;
+        if(arguments.length > 0 && typeof arguments[arguments.length-1] == 'function'){
+            done=arguments[arguments.length-1];
+        };
+        
+        if(arguments.length > 0 && typeof arguments[0].filename !== 'undefined' || arguments.length > 0 && typeof arguments[0].path !== 'undefined')
+        {
+             options=arguments[0];
+        };
+
+        let _filename = !!(options && typeof options.filename !== 'undefined') ? options.filename : 'env';
+        let _stack = callsite();
+        let _requester = _stack[1].getFileName();
+        let _folder = !!(options &&  typeof options.path !== 'undefined') ? options.path : path.dirname(_requester);
+        if(typeof global.env !== 'undefined')
+        {   
+            try {  
+                fs.writeFileSync(`${_folder}/${_filename}.json`, JSON.stringify(global.env, null, 4));
+                if(done)
+                {
+                    return done(null, `File: ${_filename}.json it´s created in folder: ${_folder}`);
+                };  
+            } catch(e) 
+            {
+                return done(e, null);
+            };
+        } 
+        else
+        {
+            if(done)
+            {
+                return done( new Error('global.env doesn´t exist, initializes goenv first.'), null );
+            };
+        };
     };
 
     return {
         init: init,
-        extend: extend
+        extend: extend,
+        writeEnvFile: writeEnvFile
     };
 
 }();

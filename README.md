@@ -24,6 +24,13 @@ const options =
 const env = goenv.init(options);
 
 ```
+`OPTIONS FOR INIT METHOD` - example:
+- dirname: 'custom_path/to/my/folder'
+- defaultEnv: 'pre' 
+- envPatterns: ['dev','int','pre','pro']
+- types:['json','js'],
+- excludeFiles:['package.json','index.js'],
+- excludeFolders:['node_modules','other_folder']
 
 ### Global var env
 Get the env context in other files after call goenv in index app.
@@ -45,10 +52,26 @@ goenv.extend({
 
 ```
 
-`OPTIONS` - example:
-- dirname: 'custom_path/to/my/folder'
-- defaultEnv: 'pre' 
-- envPatterns: ['dev','int','pre','pro']
-- types:['json','js'],
-- excludeFiles:['package.json','index.js'],
-- excludeFolders:['node_modules','other_folder']
+### Write env json file
+
+```
+
+const optionsWriteFile ={
+        filename: 'initConfig',
+        path: __dirname
+};
+
+goenv.writeEnvFile( optionsWriteFile, ( err, done ) => 
+{
+    if(err)
+    {
+        console.log(err);
+    };
+    console.log(done);
+});
+
+```
+
+`OPTIONS FOR writeEnvFile METHOD` - example:
+- filename: 'myEnvFile',
+- path: 'path/to/save/the/envFile'
