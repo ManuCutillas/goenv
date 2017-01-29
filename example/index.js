@@ -1,4 +1,4 @@
-const goenv = require('./goenv');
+const goenv = require('../index.js');
 const options = 
 {
         dirname: __dirname,
@@ -9,7 +9,7 @@ const options =
         excludeFolders:['node_modules']
 };
 
-const env = goenv(options);
+const env = goenv.init(options);
 console.log('initial',global.env);
 
 

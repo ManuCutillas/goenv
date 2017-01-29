@@ -171,7 +171,7 @@ module.exports = function ()
      */
     function _getDirname(options)
     {
-        return (options && typeof options.dirname !== 'undefined') ? dirname : __dirname;
+        return (options && typeof options.dirname !== 'undefined') ? options.dirname : __dirname;
     };
 
     /**
@@ -191,8 +191,7 @@ module.exports = function ()
         return _tmpContent;
     };
 
-    
-    return (options) =>
+    function init(options)
     {
         _dirname = _getDirname(options);
         _types = _getTypes(options);
@@ -212,14 +211,19 @@ module.exports = function ()
         _merge['envName']=_env;
         global.env = _merge;  
         return _merge;
+    };
 
-        function extend(ext)
-        {
-            let _newExtend = global.env;
-            _newExtend = _extend(_newExtend, ext);
-            global.env =  _newExtend;
-            return _newExtend;
-        };
+    function extend(ext)
+    {
+        let _newExtend = global.env;
+        _newExtend = _extend(_newExtend, ext);
+        global.env =  _newExtend;
+        return _newExtend;
+    };
+
+    return {
+        init: init,
+        extend: extend
     };
 
 }();

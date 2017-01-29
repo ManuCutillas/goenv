@@ -1,6 +1,6 @@
 {
   "name": "goenv",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Library to load the environment configuration.",
   "main": "index.js",
   "scripts": {
