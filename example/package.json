@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "goenv": "^1.0.0"
+    "goenv": "^1.0.1"
   }
 }
