@@ -52,7 +52,7 @@ goenv.extend({
 
 ```
 
-### Write env json file
+### Added method to write an env file
 
 ```
 
