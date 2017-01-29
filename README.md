@@ -2,14 +2,20 @@
 A set of tools to get env files and save in memory of node process
 
 ### Start
+
+- Install
+```
+npm i goenv --save
+```
+- Use
 ```
 const goenv = require('goenv');
 
 const options = 
 {
-        dirname: __dirname,
-        defaultEnv:'pro',
-        envPatterns:['pre','dev','pro','int'],
+        dirname: 'custom_path/to/my/folder',
+        defaultEnv:'dev',
+        envPatterns:['dev','int','pre','pro'],
         types:['json','js'],
         excludeFiles:['package.json','index.js'],
         excludeFolders:['node_modules']
@@ -39,10 +45,10 @@ goenv.extend({
 
 ```
 
-`OPTIONS` - example
-- dirname: __dirname
-- defaultEnv: 'pro' 
-- envPatterns: ['pre','dev','pro','int']
+`OPTIONS` - example:
+- dirname: 'custom_path/to/my/folder'
+- defaultEnv: 'pre' 
+- envPatterns: ['dev','int','pre','pro']
 - types:['json','js'],
 - excludeFiles:['package.json','index.js'],
-- excludeFolders:['node_modules']
+- excludeFolders:['node_modules','other_folder']

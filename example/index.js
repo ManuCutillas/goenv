@@ -2,8 +2,8 @@ const goenv = require('../index.js');
 const options = 
 {
         dirname: __dirname,
-        defaultEnv:'pro',
-        envPatterns:['pre','dev','pro','int'],
+        defaultEnv:'dev',
+        envPatterns:['dev','int','pre', 'pro'],
         types:['json','js'],
         excludeFiles:['package.json','index.js'],
         excludeFolders:['node_modules']

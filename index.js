@@ -1,4 +1,6 @@
 const glob = require('glob');
+const path = require('path');
+const callsite = require('callsite');
 module.exports = function () 
 {
   let _merge = {};
@@ -171,7 +173,9 @@ module.exports = function ()
      */
     function _getDirname(options)
     {
-        return (options && typeof options.dirname !== 'undefined') ? options.dirname : __dirname;
+        let _stack = callsite();
+        let _requester = _stack[1].getFileName();
+        return !!(options && typeof options.dirname !== 'undefined') ? options.dirname : path.dirname(_requester);
     };
 
     /**
