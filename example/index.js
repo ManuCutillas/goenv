@@ -9,7 +9,7 @@ const options =
         excludeFolders:['node_modules']
 };
 
-const env = goenv(__dirname, options);
+const env = goenv(options);
 console.log('initial',global.env);
 
 

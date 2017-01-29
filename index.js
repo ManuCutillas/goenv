@@ -169,9 +169,9 @@ module.exports = function ()
      * @param   {Object} options
      * @returns {Array} 
      */
-    function _getDirname(dirname)
+    function _getDirname(options)
     {
-        return dirname ? dirname : __dirname;
+        return (options && typeof options.dirname !== 'undefined') ? dirname : __dirname;
     };
 
     /**
@@ -192,9 +192,9 @@ module.exports = function ()
     };
 
     
-    return (dirname, options) =>
+    return (options) =>
     {
-        _dirname = _getDirname(dirname);
+        _dirname = _getDirname(options);
         _types = _getTypes(options);
         _dEnv = _setDefaultEnv(options);
         _envPatterns = _getEnvPatterns(options);

@@ -15,7 +15,7 @@ const options =
         excludeFolders:['node_modules']
 };
 
-const env = goenv(__dirname, options);
+const env = goenv(options);
 
 ```
 
