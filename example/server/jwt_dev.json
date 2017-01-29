@@ -1,0 +1,9 @@
+{
+    "server":{
+        "jwt":{
+            "token": { "secret": "secret'" },
+            "tokenExpiration": 60,
+            "tokenExpirationSec": 3600
+        }
+    }
+}

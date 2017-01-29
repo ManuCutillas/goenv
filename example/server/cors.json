@@ -1,0 +1,17 @@
+{
+    "server": {
+        "cors": {
+            "whitelist": ["https://manucutillas.com"],
+            "allowOrigin": "*",
+            "allowedMethods": ["GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE"],
+            "allowedHeaders": ["Origin", "X-Requested-With", "Content-Type", "Accept"],
+            "exposedHeaders": ["*"],
+            "credentials": false,
+            "maxAge": 3600,
+            "options": {
+                "corsOptionsDisabled": false,
+                "corsOptionsAllow": true
+            }
+        }
+    }
+}

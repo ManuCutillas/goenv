@@ -1,0 +1,16 @@
+{
+    "cache": {
+        "redis": {
+            "ide": {
+                "host": "localhost",
+                "port": 6379
+            },
+            "db": {
+                "renders": 0,
+                "routes": 1,
+                "metadata": 2
+            },
+            "pagination": 1000
+        }
+    }
+}

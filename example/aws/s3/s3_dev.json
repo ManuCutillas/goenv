@@ -1,0 +1,10 @@
+{
+    "aws": {
+        "s3": {
+            "apiVersion": "2015-03-31",
+            "bucket": "bucke-name",
+            "region": "s3-eu-west-1",
+            "server": "amazonaws.com"
+        }
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "aws": {
+        "ec2": {
+            "apiVersion": "latest"
+        }
+    }
+}
