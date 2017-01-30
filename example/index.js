@@ -1,6 +1,6 @@
-const goenv = require('../index.js');
+const envpro = require('envpro');
 
-//const env = goenv.init();
+//const env = envpro.init();
 //By default get all your .json files in this folder to compose the env config.
 
 /* ====================================
@@ -19,22 +19,21 @@ const options =
         excludeFolders:['node_modules']
 };
 
-const env = goenv.init(options);
+const env = envpro.init(options);
 console.log('initial',global.env);
 
 
+/* ====================================
+          EXTEND METHOD
+=======================================*/
 const optionsExtend = 
 {
 global: true,
 process: true,
 envName: 'nodeRocks-1.0'
 };
-
-/* ====================================
-          EXTEND METHOD
-=======================================*/
 //Extend your initial config env.
-const extended = goenv.extend({
+const extended = envpro.extend({
 	propertyExtended: {
 		property: 'extended'
 	}
@@ -46,7 +45,7 @@ console.log('extended',global.env);
           writeEnvFile METHOD
 =======================================*/
 //Write your config in a unique json file by default with env name in this path.
-/*goenv.writeEnvFile((err,done)=> 
+/*envpro.writeEnvFile((err,done)=> 
 {
         if(err)
         {
@@ -57,13 +56,12 @@ console.log('extended',global.env);
 
 //Write your config in a unique json file with a custom name and custom path.
 let optionsWriteFile ={
-      
         path: __dirname,
         envName: 'nodeRocks-1.0',
         global:true
 };
 
-goenv.writeEnvFile(optionsWriteFile, (err,done)=> 
+envpro.writeEnvFile(optionsWriteFile, (err,done)=> 
 {
         if(err)
         {
@@ -81,7 +79,7 @@ const deleteOptions = {
         envName: 'nodeRocks-1.0',
         key: 'credentials'
 };
-const deleted = goenv.deleteProps(deleteOptions);
+const deleted = envpro.deleteProps(deleteOptions);
 
 /* ====================================
          PRINT ENVS

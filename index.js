@@ -410,7 +410,7 @@ module.exports = function ()
         {
             if(done)
             {
-                return done( new Error('global.env doesn´t exist, initializes goenv first.'), null );
+                return done( new Error('global.env doesn´t exist, initializes envpro first.'), null );
             };
         };
     };

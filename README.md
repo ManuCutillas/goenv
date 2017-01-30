@@ -5,28 +5,34 @@ A set of tools to get env files and save in memory of node process
 
 - Install
 ```
-npm i goenv --save
+npm i envpro --save
 ```
 - Use
 ```
-const goenv = require('goenv');
+const envpro = require('envpro');
 
 const options = 
 {
-        dirname: 'custom_path/to/my/folder',
+        global: true,
+        process: true,
+        dirname: __dirname,
         defaultEnv:'dev',
-        envPatterns:['dev','int','pre','pro'],
+        envName: 'nodeRocks-1.0',
+        envPatterns:['dev','int','pre', 'pro'],
         types:['json','js'],
         excludeFiles:['package.json','index.js'],
         excludeFolders:['node_modules']
 };
 
-const env = goenv.init(options);
+const env = envpro.init(options);
 
 ```
 `OPTIONS FOR INIT METHOD` - example:
+- global: true,
+- process: true,
 - dirname: 'custom_path/to/my/folder'
 - defaultEnv: 'pre' 
+- envName: 'nodeRocks-1.0'
 - envPatterns: ['dev','int','pre','pro']
 - types:['json','js'],
 - excludeFiles:['package.json','index.js'],
@@ -36,38 +42,67 @@ const env = goenv.init(options);
 Get the env context in other files after call goenv in index app.
 
 ```
-const env = global.env
+const env = global[myEnvNameInstance];
 ```
 
 ### Extend env 
 ```
-const goenv = require('goenv');
+const envpro = require('envpro');
  
-goenv.extend({
-    extendConfig:{
-        property1:1,
-        property2:2
-    }
-});
+const optionsExtend = 
+{
+global: true,
+process: true,
+envName: 'nodeRocks-1.0'
+};
+
+const extended = envpro.extend({
+	propertyExtended: {
+		property: 'extended'
+	}
+}, optionsExtend);
+console.log('extended',global['nodeRocks-1.0']);
 
 ```
+
+### Added method to remove deep properties
+
+```
+
+const deleteOptions = {
+        global: true,
+        process: true,
+        envName: 'nodeRocks-1.0',
+        key: 'credentials'
+};
+const deleted = envpro.deleteProps(deleteOptions);
+
+```
+
+`OPTIONS FOR deleteProps METHOD` - example:
+- global: true,
+- process: true,
+- envName: 'nodeRocks-1.0',
+- key: 'credentials'
 
 ### Added method to write an env file
 
 ```
 
-const optionsWriteFile ={
-        filename: 'initConfig',
-        path: __dirname
+let optionsWriteFile ={
+        filename: 'myEnvFile',
+        path: __dirname,
+        envName: 'nodeRocks-1.0',
+        global:true
 };
 
-goenv.writeEnvFile( optionsWriteFile, ( err, done ) => 
+envpro.writeEnvFile(optionsWriteFile, (err,done)=> 
 {
-    if(err)
-    {
-        console.log(err);
-    };
-    console.log(done);
+        if(err)
+        {
+                console.log(err);
+        };
+        console.log(done);
 });
 
 ```
@@ -75,3 +110,6 @@ goenv.writeEnvFile( optionsWriteFile, ( err, done ) =>
 `OPTIONS FOR writeEnvFile METHOD` - example:
 - filename: 'myEnvFile',
 - path: 'path/to/save/the/envFile'
+- envName: 'nodeRocks-1.0',
+- global:true
+- process: false
