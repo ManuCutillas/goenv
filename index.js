@@ -8,9 +8,10 @@ module.exports = function ()
   let _envPatterns = [];
   let _dirname,
       _types, 
-      _env, 
+      _env,
       _dEnv, 
-      _files;
+      _files,
+      _envName;
   
   /**
    * Extends json files
@@ -38,26 +39,91 @@ module.exports = function ()
         }
         return _ext;
   };
+
+  function _findAndDelete(obj,key)
+  {
+        let _i;
+        let _proto=Object.prototype;
+        let _toString=_proto.toString;
+        let _hasOwn=_proto.hasOwnProperty.bind(obj);
+
+        for (_i in obj) 
+        {
+            if (_hasOwn(_i)) 
+            {
+                if (_i === key) 
+                {
+                    delete obj[_i];
+                } 
+                else if ( _toString.call(obj[_i]) === '[object Array]' || _toString.call(obj[_i]) === '[object Object]' ) 
+                {
+                    _findAndDelete(obj[_i], key);
+                };
+            };
+        };
+      return obj;
+  };
+
+  function deleteProps(options) 
+  {
+      let _optionsItsOk = !!(options && Object.prototype.toString.call(options) === '[object Object]');
+      let _globalItsOk = !!(_optionsItsOk && typeof options.global !== undefined && options.global);
+      let _processEnvItsOk = !!(_optionsItsOk && typeof options.process !== undefined && options.process);
+      let _optionsEnvNameItsOk = !!(_processEnvItsOk && typeof options.envName !== undefined);
+      let _keyItsOk = !!(_optionsItsOk && typeof options.key !== undefined);
+      let results = [];
+
+      if(_optionsItsOk && _globalItsOk && typeof global[options.envName] !== 'undefined' && _keyItsOk)
+      {
+            let _delEnv = _findAndDelete(global[options.envName],options.key);
+            global[options.envName] = _delEnv ;
+            results.push('ok');
+      };
+      if(_optionsItsOk && _processEnvItsOk && _optionsEnvNameItsOk)
+      {
+            let pProcessName = options.envName.toUpperCase();
+            if(typeof process.env[pProcessName] !== 'undefined' && _keyItsOk)
+            {
+                let _delEnv  = _findAndDelete(JSON.parse(process.env[pProcessName]), options.key);
+                process.env[options.envName] = _delEnv;
+                results.push('ok');
+            };
+      };
+
+      return results;
+  };
+
+  /**
+   * Set env instance in global vars
+   * @returns {String} 
+   */
+  function _setInstanceName(options)
+  {
+      let _itsOk = ( options && typeof options.envName!== 'undefined' );
+      return _itsOk ? options.envName : 'env';
+  };
     
   /**
    * Get the environment
-   * @param   {Object} options
    * @returns {String} 
    */
-    function _getEnvironment(options)
+    function _getEnvironment()
     {
-        if(process.env.NODE_ENV !== undefined)
+        let _getEnv;
+        if(typeof process.env.NODE_ENV !== 'undefined')
         {
+
             let _processEnv = process.env.NODE_ENV.toLowerCase();
-            _env = _envPatterns.filter((pattern)=>
+            _getEnv = _envPatterns.filter((pattern)=>
             {
                 return pattern.toLowerCase() === _processEnv;
             });
+            return _getEnv;
         }
         else
         {
-            process.env.NODE_ENV = _dEnv;
-            return(_dEnv);
+            process.env.NODE_ENV= _dEnv;
+            return _dEnv;
         };
     };
 
@@ -83,7 +149,7 @@ module.exports = function ()
 
        _types.forEach((type)=>
        {
-            let _indexEnv = _envPatterns.indexOf(`**/*${_dEnv}.${type}`);
+            let _indexEnv = _envPatterns.indexOf(`**/*${_env}.${type}`);
             _envPatterns.splice(_indexEnv, 1);
        });
 
@@ -204,6 +270,11 @@ module.exports = function ()
         _envPatterns = _getEnvPatterns(options);
         _env = _getEnvironment(options);
         _files = _getPathFiles(options);
+        _envName = _setInstanceName(options);
+
+        let _optionsItsOk = !!(options && Object.prototype.toString.call(options) === '[object Object]');
+        let _globalItsOk = !!(_optionsItsOk && typeof options.global !== undefined && options.global);
+        let _processEnvItsOk = !!(_optionsItsOk && typeof options.process !== undefined && options.process);
         
         if(typeof _files !== 'undefined' && Object.prototype.toString.call(_files) == '[object Array]' &&   _files.length > 0 )
         {
@@ -212,27 +283,78 @@ module.exports = function ()
                 let _tmpFile = _getFile( file );
                 _merge = _extend(_merge, _tmpFile);
             });
-        }; 
-        _merge['envName']=_env;
-        global.env = _merge;  
+        };
+        _merge['env']=_env;
+        _merge['envName']=_envName;
+
+        if(_optionsItsOk) global[_envName] = _merge;  
+        if(_processEnvItsOk)
+        {
+            let pEnvName = _envName.toUpperCase();
+            process.env[pEnvName] = JSON.stringify(_merge);
+        };
         return _merge;
     };
 
-    function extend(ext)
+    function extend(ext, options)
     {
-        let _newExtend;
-        if(typeof global.env !== 'undefined')
-        {
-            _newExtend = global.env;
-            _newExtend = _extend(_newExtend, ext);
-            global.env =  _newExtend;
+        let extended;
+        let _optionsItsOk = !!(options && Object.prototype.toString.call(options) === '[object Object]');
+        let _globalItsOk = !!(_optionsItsOk && typeof options.global !== undefined && options.global);
+        let _processEnvItsOk = !!(_optionsItsOk && typeof options.process !== undefined && options.process);
+        let _envNAMEItsOK = ( _optionsItsOk && typeof options.envName !== 'undefined');
 
+        if(ext && Object.prototype.toString.call(ext) !== '[object Object]')
+        {
+            return 'Please set a object';
+        };
+
+        if(_optionsItsOk && typeof options.envName !== 'undefined')
+        {
+            if(typeof global[options.envName] !== 'undefined' && global)
+            {
+                let _newExtend;
+                    _newExtend = global[options.envName];
+                    _newExtend = _extend(_newExtend, ext);
+                    global[options.envName] = _newExtend;
+                    extended = _newExtend;
+            };
+            if(_envNAMEItsOK)
+            {
+                let uperEnvName = options.envName.toUpperCase();
+                if(typeof process.env[uperEnvName] !== 'undefined')
+                {
+                    let _newExtend;
+                        _newExtend = JSON.parse(process.env[uperEnvName]);
+                        _newExtend = _extend(_newExtend, ext);
+                        process.env[uperEnvName] = JSON.stringify(_newExtend);
+                        extended = _newExtend;
+                };
+            }
         }
         else
         {
-            _newExtend = "global.env doesn´t exist, initializes goenv first.";
-        };
-        return _newExtend;
+            if(typeof global.env !== 'undefined' && global)
+            {
+                let _newExtend;
+                    _newExtend = global.env;
+                    _newExtend = _extend(_newExtend, ext);
+                    global.env = _newExtend;
+                    extended = _newExtend;
+            };
+
+            if(typeof process.env.ENV !== 'undefined' && options.process)
+            {
+                let _newExtend;
+                    _newExtend = JSON.parse(process.env.ENV);
+                    _newExtend = _extend(_newExtend, ext);
+                    process.env.ENV = JSON.stringify(_newExtend);
+                    extended = _newExtend;
+            };
+
+        }
+
+        return extended;
     };
 
     function writeEnvFile()
@@ -248,18 +370,37 @@ module.exports = function ()
              options=arguments[0];
         };
 
-        let _filename = !!(options && typeof options.filename !== 'undefined') ? options.filename : 'env';
+        let _filename = 'env';
+        let _envNameItsOk = (options && typeof options.envName !== 'undefined' && options.envName);
+        let _globalItsOk = (options && _envNameItsOk && typeof options.global !== 'undefined' && options.global && typeof global[options.envName] !== 'undefined');
+        let _processItsOk = (options && _envNameItsOk && typeof options.process !== 'undefined' && options.process && typeof process.env[options.envName.toUpperCase()] !== 'undefined');
+        
+        //filename
+        if(options && typeof options.filename !== 'undefined')
+        {
+          _filename = options.filename
+        }
+        else if(options && typeof options.filename === 'undefined' && _envNameItsOk)
+        {
+          _filename = options.envName.toLowerCase();
+        };
+
         let _stack = callsite();
         let _requester = _stack[1].getFileName();
         let _folder = !!(options &&  typeof options.path !== 'undefined') ? options.path : path.dirname(_requester);
-        if(typeof global.env !== 'undefined')
+        if( _globalItsOk || _processItsOk )
         {   
-            try {  
-                fs.writeFileSync(`${_folder}/${_filename}.json`, JSON.stringify(global.env, null, 4));
+            try {
+                if(_globalItsOk){
+                  fs.writeFileSync(`${_folder}/${_filename}.json`, JSON.stringify(global[options.envName], null, 4));  
+                } else if(_processItsOk)
+                {
+                   fs.writeFileSync(`${_folder}/${_filename}.json`, JSON.stringify(process.env[options.envName.toUpperCase()], null, 4));   
+                }
                 if(done)
                 {
                     return done(null, `File: ${_filename}.json it´s created in folder: ${_folder}`);
-                };  
+                };
             } catch(e) 
             {
                 return done(e, null);
@@ -277,7 +418,8 @@ module.exports = function ()
     return {
         init: init,
         extend: extend,
-        writeEnvFile: writeEnvFile
+        writeEnvFile: writeEnvFile,
+        deleteProps: deleteProps
     };
 
 }();
