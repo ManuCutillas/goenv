@@ -1,288 +1,36 @@
-const glob = require('glob');
 const path = require('path');
 const callsite = require('callsite');
 const fs = require('fs');
+const utils=require('./lib/utils');
 module.exports = function () 
 {
-  let _merge = {};
-  let _envRegExPatterns = [],
-      _envSelections,
-      _dirname,
-      _types, 
-      _env,
-      _dEnv, 
-      _files,
-      _envName;
-  
-  /**
-   * Extends json files
-   * @param   {Object} _ext
-   * @returns {Object}
-   */
-   function _extend( _ext ) 
+    let _merge = {};
+    const init=( options ) =>
     {
-        for (var i = 1; i < arguments.length; ++i) {
-            var from = arguments[i];
-            if (typeof from !== 'object') continue;
-            for (var j in from) {
-                if (from.hasOwnProperty(j)) 
-                {
-                    if(typeof from[j] === 'object' && Object.prototype.toString.call(from[j]) !== '[object Array]')
-                    {
-                        _ext[j] = _extend({}, _ext[j], from[j]);
-                    }
-                    else
-                    {
-                        _ext[j] = from[j];
-                    }
-                }
-            }
-        }
-        return _ext;
-  };
+        let _stack = callsite(),
+            _requester = _stack[1].getFileName(),
+            _requestDirname = path.dirname(_requester);
 
-  function _findAndDelete(obj,key)
-  {
-        let _i;
-        let _proto=Object.prototype;
-        let _toString=_proto.toString;
-        let _hasOwn=_proto.hasOwnProperty.bind(obj);
+        let _dirname = utils.getDirname(options,_requestDirname),
+            _types = utils.getTypes(options),
+            _dEnv = utils.setDefaultEnv(options),
+            _envsObj = utils.getEnvPatterns( options, _types ),
+            _envRegExPatterns = _envsObj.listPattern,
+            _envSelections = _envsObj.envSelections,
+            _env = utils.getEnvironment(_envSelections, _dEnv),
+            _files = utils.getPathFiles( options, _types, _dirname, _env, _envRegExPatterns),
+            _envName = utils.setInstanceName(options);
 
-        for (_i in obj) 
-        {
-            if (_hasOwn(_i)) 
-            {
-                if (_i === key) 
-                {
-                    delete obj[_i];
-                } 
-                else if ( _toString.call(obj[_i]) === '[object Array]' || _toString.call(obj[_i]) === '[object Object]' ) 
-                {
-                    _findAndDelete(obj[_i], key);
-                };
-            };
-        };
-      return obj;
-  };
-
-  function deleteProps(options) 
-  {
-      let _optionsItsOk = !!(options && Object.prototype.toString.call(options) === '[object Object]');
-      let _globalItsOk = !!(_optionsItsOk && typeof options.global !== undefined && options.global);
-      let _processEnvItsOk = !!(_optionsItsOk && typeof options.process !== undefined && options.process);
-      let _optionsEnvNameItsOk = !!(_processEnvItsOk && typeof options.envName !== undefined);
-      let _keyItsOk = !!(_optionsItsOk && typeof options.key !== undefined);
-      let results = [];
-
-      if(_optionsItsOk && _globalItsOk && typeof global[options.envName] !== 'undefined' && _keyItsOk)
-      {
-            let _delEnv = _findAndDelete(global[options.envName],options.key);
-            global[options.envName] = _delEnv ;
-            results.push('ok');
-      };
-      if(_optionsItsOk && _processEnvItsOk && _optionsEnvNameItsOk)
-      {
-            let pProcessName = options.envName.toUpperCase();
-            if(typeof process.env[pProcessName] !== 'undefined' && _keyItsOk)
-            {
-                let _delEnv  = _findAndDelete(JSON.parse(process.env[pProcessName]), options.key);
-                process.env[options.envName] = _delEnv;
-                results.push('ok');
-            };
-      };
-
-      return results;
-  };
-
-  /**
-   * Set env instance in global vars
-   * @returns {String} 
-   */
-  function _setInstanceName(options)
-  {
-      let _itsOk = ( options && typeof options.envName!== 'undefined' );
-      return _itsOk ? options.envName : 'env';
-  };
-    
-  /**
-   * Get the environment
-   * @returns {String} 
-   */
-    function _getEnvironment()
-    {
-        let _getEnv;
-        if(typeof process.env.NODE_ENV !== 'undefined')
-        {
-
-            let _processEnv = `${process.env.NODE_ENV.toLowerCase()}`;
-            _getEnv = _envSelections.filter((pattern)=>
-            {
-                return pattern.toLowerCase() === _processEnv;
-            });
-            return _getEnv;
-        }
-        else
-        {
-            process.env.NODE_ENV= _dEnv;
-            return _dEnv;
-        };
-    };
-
-  /**
-   * set default env
-   * @param   {Object} options
-   * @returns {String} 
-   */
-   function _setDefaultEnv(options)
-   {
-       return (options && typeof options.defaultEnv !== 'undefined') ? options.defaultEnv : 'dev';
-   };
-
-  /**
-   * spliceEnv
-   * @param   {Object} options
-   * @returns {Array} 
-   */
-   function _spliceEnv(options)
-   {
-       let _exFiles= (options && typeof options.excludeFiles !== 'undefined' && Object.prototype.toString.call(options.excludeFiles) == '[object Array]' && options.excludeFiles.length > 0);
-       let _exFolders= (options && typeof options.excludeFolders !== 'undefined' && Object.prototype.toString.call(options.excludeFolders) == '[object Array]' && options.excludeFolders.length > 0);
-
-       _types.forEach((type)=>
-       {
-            let _indexEnv = _envRegExPatterns.indexOf(`**/*${_env}.${type}`);
-            _envRegExPatterns.splice(_indexEnv, 1);
-       });
-
-       if(_exFolders)
-       {
-           options.excludeFolders.forEach((folder)=>
-           {
-                _envRegExPatterns.push(`${_dirname}/${folder}/**`);
-           });
-       };
-
-       if(_exFiles)
-       {
-           options.excludeFiles.forEach((file)=>
-           {
-                _envRegExPatterns.push(`/**/${file}`);
-           });
-       };
-       return _envRegExPatterns;
-   };
-    
-    /**
-     * get all correct files in the the dirname
-     * @param   {Object} options
-     * @returns {Array} 
-     */
-    function _getPathFiles(options)
-    {
-        let files=[];
-        let _tmpList=[];
-        let _ignore = _spliceEnv(options);
-
-        files = _types.map((type) =>
-        {
-            return glob.sync(`${_dirname}/**/*.${type}`, { ignore: _ignore });
-        });
-        files = [].concat.apply([],files); 
-        return files;
-    };
-
-    /**
-     * get all env states 
-     * @param   {Object} options
-     * @returns {Array} 
-     */
-    function _getEnvPatterns(options)
-    {
-        let tmpListPattern = [];
-        let _envRegExPatternsIsOK = (options && typeof options.types !== 'undefined' && Object.prototype.toString.call(options.envPatterns) == '[object Array]' && options.envPatterns.length > 0);
-        _envSelections=_envRegExPatternsIsOK?options.envPatterns:['prod','pre','int','dev'];
-        _envSelections.forEach(( _envOption )=>
-        {
-            _types.forEach((_type)=>
-            {
-                tmpListPattern.push(`**/*${_envOption}.${_type}`);
-            });
-        });
-        return tmpListPattern;
-    };
-
-    /**
-     * get all type of file to search
-     * @param   {Object} options
-     * @returns {Array} 
-     */
-    function _getTypes(options)
-    {
-        let _typesIsString = (options && typeof options.types !== 'undefined' && Object.prototype.toString.call(options.types) == '[object String]' && Object.prototype.toString.call(options.types) !== '[object Array]');
-        let _typesIsArray = (options && typeof options.types !== 'undefined' && Object.prototype.toString.call(options.types) == '[object Array]' &&  options.types.length > 0);
-        if(_typesIsString)
-        {
-            return [options.types];       
-        }
-        else if(_typesIsArray)
-        {
-            return options.types;
-        }
-        else
-        {       
-            return ['json'];
-        };
-    };
-
-    /**
-     * get the dirname to search
-     * @param   {Object} options
-     * @returns {Array} 
-     */
-    function _getDirname(options)
-    {
-        let _stack = callsite();
-        let _requester = _stack[1].getFileName();
-        return !!(options && typeof options.dirname !== 'undefined') ? options.dirname : path.dirname(_requester);
-    };
-
-    /**
-     * get the dirname to search
-     * @param   {String} file
-     * @returns {Object} 
-     */
-    function _getFile(file)
-    {
-        let _tmpContent;
-        try {  
-            _tmpContent = require( file );   
-        } catch(e) 
-        {
-            return e.stack;
-        };
-        return _tmpContent;
-    };
-
-    function init(options)
-    {
-        _dirname = _getDirname(options);
-        _types = _getTypes(options);
-        _dEnv = _setDefaultEnv(options);
-        _envRegExPatterns = _getEnvPatterns(options);
-        _env = _getEnvironment(options);
-        _files = _getPathFiles(options);
-        _envName = _setInstanceName(options);
-
-        let _optionsItsOk = !!(options && Object.prototype.toString.call(options) === '[object Object]');
-        let _globalItsOk = !!(_optionsItsOk && typeof options.global !== undefined && options.global);
-        let _processEnvItsOk = !!(_optionsItsOk && typeof options.process !== undefined && options.process);
+        let _optionsItsOk = !!(options && Object.prototype.toString.call(options) === '[object Object]'),
+            _globalItsOk = !!(_optionsItsOk && typeof options.global !== 'undefined' && options.global),
+            _processEnvItsOk = !!(_optionsItsOk && typeof options.process !== 'undefined' && options.process);
         
-        if(typeof _files !== 'undefined' && Object.prototype.toString.call(_files) == '[object Array]' &&   _files.length > 0 )
+        if(typeof _files !== 'undefined' && _files.length > 0 )
         {
             _files.forEach(( file ) => 
             {
-                let _tmpFile = _getFile( file );
-                _merge = _extend(_merge, _tmpFile);
+                let _tmpFile = utils.getFile( file );
+                _merge = utils.extend( _merge, _tmpFile );
             });
         };
         _merge['env']=_env;
@@ -291,18 +39,17 @@ module.exports = function ()
         if(_optionsItsOk) global[_envName] = _merge;  
         if(_processEnvItsOk)
         {
-            let pEnvName = _envName.toUpperCase();
-            process.env[pEnvName] = JSON.stringify(_merge);
+            process.env[_envName.toUpperCase()] = JSON.stringify(_merge);
         };
         return _merge;
     };
 
-    function extend(ext, options)
+    const extend=( ext, options )=>
     {
         let extended;
         let _optionsItsOk = !!(options && Object.prototype.toString.call(options) === '[object Object]');
-        let _globalItsOk = !!(_optionsItsOk && typeof options.global !== undefined && options.global);
-        let _processEnvItsOk = !!(_optionsItsOk && typeof options.process !== undefined && options.process);
+        let _globalItsOk = !!(_optionsItsOk && typeof options.global !== 'undefined' && options.global);
+        let _processEnvItsOk = !!(_optionsItsOk && typeof options.process !== 'undefined' && options.process);
         let _envNAMEItsOK = ( _optionsItsOk && typeof options.envName !== 'undefined');
 
         if(ext && Object.prototype.toString.call(ext) !== '[object Object]')
@@ -316,7 +63,7 @@ module.exports = function ()
             {
                 let _newExtend;
                     _newExtend = global[options.envName];
-                    _newExtend = _extend(_newExtend, ext);
+                    _newExtend = utils.extend(_newExtend, ext);
                     global[options.envName] = _newExtend;
                     extended = _newExtend;
             };
@@ -327,7 +74,7 @@ module.exports = function ()
                 {
                     let _newExtend;
                         _newExtend = JSON.parse(process.env[uperEnvName]);
-                        _newExtend = _extend(_newExtend, ext);
+                        _newExtend = utils.extend(_newExtend, ext);
                         process.env[uperEnvName] = JSON.stringify(_newExtend);
                         extended = _newExtend;
                 };
@@ -339,7 +86,7 @@ module.exports = function ()
             {
                 let _newExtend;
                     _newExtend = global.env;
-                    _newExtend = _extend(_newExtend, ext);
+                    _newExtend = utils.extend(_newExtend, ext);
                     global.env = _newExtend;
                     extended = _newExtend;
             };
@@ -348,7 +95,7 @@ module.exports = function ()
             {
                 let _newExtend;
                     _newExtend = JSON.parse(process.env.ENV);
-                    _newExtend = _extend(_newExtend, ext);
+                    _newExtend = utils.extend(_newExtend, ext);
                     process.env.ENV = JSON.stringify(_newExtend);
                     extended = _newExtend;
             };
@@ -414,6 +161,34 @@ module.exports = function ()
                 return done( new Error('global.env doesn´t exist, initializes goenv first.'), null );
             };
         };
+    };
+
+    const deleteProps = (options) => 
+    {
+        let _optionsItsOk = !!(options && Object.prototype.toString.call(options) === '[object Object]');
+        let _globalItsOk = !!(_optionsItsOk && typeof options.global !== 'undefined' && options.global);
+        let _processEnvItsOk = !!(_optionsItsOk && typeof options.process !== 'undefined' && options.process);
+        let _optionsEnvNameItsOk = !!(_processEnvItsOk && typeof options.envName !== 'undefined');
+        let _keyItsOk = !!(_optionsItsOk && typeof options.key !== 'undefined');
+        let results = [];
+
+        if(_optionsItsOk && _globalItsOk && typeof global[options.envName] !== 'undefined' && _keyItsOk)
+        {
+            let _delEnv = utils.findAndDelete(global[options.envName],options.key);
+            global[options.envName] = _delEnv ;
+            results.push('ok');
+        };
+        if(_optionsItsOk && _processEnvItsOk && _optionsEnvNameItsOk)
+        {
+            let pProcessName = options.envName.toUpperCase();
+            if(typeof process.env[pProcessName] !== 'undefined' && _keyItsOk)
+            {
+                let _delEnv  = utils.findAndDelete(JSON.parse(process.env[pProcessName]), options.key);
+                process.env[options.envName] = _delEnv;
+                results.push('ok');
+            };
+        };
+        return results;
     };
 
     return {
