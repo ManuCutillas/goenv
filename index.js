@@ -7,23 +7,24 @@ module.exports = function ()
     let _merge = {};
     const init=( options ) =>
     {
+        let _options = options;
         let _stack = callsite(),
             _requester = _stack[1].getFileName(),
             _requestDirname = path.dirname(_requester);
 
-        let _dirname = utils.getDirname(options,_requestDirname),
-            _types = utils.getTypes(options),
-            _dEnv = utils.setDefaultEnv(options),
-            _envsObj = utils.getEnvPatterns( options, _types ),
+        let _dirname = utils.getDirname(_options, _requestDirname),
+            _types = utils.getTypes( _options ),
+            _dEnv = utils.setDefaultEnv( _options ),
+            _envsObj = utils.getEnvPatterns( _options, _types ),
             _envRegExPatterns = _envsObj.listPattern,
             _envSelections = _envsObj.envSelections,
             _env = utils.getEnvironment(_envSelections, _dEnv),
-            _files = utils.getPathFiles( options, _types, _dirname, _env, _envRegExPatterns),
-            _envName = utils.setInstanceName(options);
+            _files = utils.getPathFiles( _options, _types, _dirname, _env, _envRegExPatterns),
+            _envName = utils.setInstanceName( _options );
 
-        let _optionsItsOk = !!(options && Object.prototype.toString.call(options) === '[object Object]'),
-            _globalItsOk = !!(_optionsItsOk && typeof options.global !== 'undefined' && options.global),
-            _processEnvItsOk = !!(_optionsItsOk && typeof options.process !== 'undefined' && options.process);
+        let _optionsItsOk = !!(_options && Object.prototype.toString.call(_options) === '[object Object]'),
+            _globalItsOk = !!(_optionsItsOk && typeof _options.global !== 'undefined' && _options.global),
+            _processEnvItsOk = !!(_optionsItsOk && typeof _options.process !== 'undefined' && _options.process);
         
         if(typeof _files !== 'undefined' && _files.length > 0 )
         {
