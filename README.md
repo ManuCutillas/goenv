@@ -5,11 +5,11 @@ A set of tools to get env files and save
 
 - Install
 ```
-npm i envpro --save
+npm i goenv --save
 ```
 - Use
 ```
-const envpro = require('envpro');
+const goenv = require('goenv');
 
 const options = 
 {
@@ -24,7 +24,7 @@ const options =
         excludeFolders:['node_modules']
 };
 
-const env = envpro.init(options);
+const env = goenv.init(options);
 
 ```
 `OPTIONS FOR INIT METHOD` - example:
@@ -47,7 +47,7 @@ const env = global[myEnvNameInstance];
 
 ### Extend env 
 ```
-const envpro = require('envpro');
+const goenv = require('goenv');
  
 const optionsExtend = 
 {
@@ -56,7 +56,7 @@ process: true,
 envName: 'nodeRocks-1.0'
 };
 
-const extended = envpro.extend({
+const extended = goenv.extend({
 	propertyExtended: {
 		property: 'extended'
 	}
@@ -75,7 +75,7 @@ const deleteOptions = {
         envName: 'nodeRocks-1.0',
         key: 'credentials'
 };
-const deleted = envpro.deleteProps(deleteOptions);
+const deleted = goenv.deleteProps(deleteOptions);
 
 ```
 
@@ -96,7 +96,7 @@ let optionsWriteFile ={
         global:true
 };
 
-envpro.writeEnvFile(optionsWriteFile, (err,done)=> 
+goenv.writeEnvFile(optionsWriteFile, (err,done)=> 
 {
         if(err)
         {
