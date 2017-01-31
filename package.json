@@ -1,6 +1,6 @@
 {
-  "name": "envpro",
-  "version": "1.0.0",
+  "name": "goenv",
+  "version": "1.0.5",
   "description": "Library to load the environment configuration.",
   "main": "index.js",
   "scripts": {

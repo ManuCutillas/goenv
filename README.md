@@ -1,5 +1,5 @@
 # Introduction
-A set of tools to get env files and save in memory of node process
+A set of tools to get env files and save
 
 ### Start
 

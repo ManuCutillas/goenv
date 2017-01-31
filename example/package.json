@@ -10,6 +10,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "goenv": "^1.0.4"
+    "goenv": "^1.0.5"
   }
 }
