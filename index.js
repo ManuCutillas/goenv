@@ -5,8 +5,9 @@ const fs = require('fs');
 module.exports = function () 
 {
   let _merge = {};
-  let _envPatterns = [];
-  let _dirname,
+  let _envRegExPatterns = [],
+      _envSelections,
+      _dirname,
       _types, 
       _env,
       _dEnv, 
@@ -113,8 +114,8 @@ module.exports = function ()
         if(typeof process.env.NODE_ENV !== 'undefined')
         {
 
-            let _processEnv = process.env.NODE_ENV.toLowerCase();
-            _getEnv = _envPatterns.filter((pattern)=>
+            let _processEnv = `${process.env.NODE_ENV.toLowerCase()}`;
+            _getEnv = _envSelections.filter((pattern)=>
             {
                 return pattern.toLowerCase() === _processEnv;
             });
@@ -149,15 +150,15 @@ module.exports = function ()
 
        _types.forEach((type)=>
        {
-            let _indexEnv = _envPatterns.indexOf(`**/*${_env}.${type}`);
-            _envPatterns.splice(_indexEnv, 1);
+            let _indexEnv = _envRegExPatterns.indexOf(`**/*${_env}.${type}`);
+            _envRegExPatterns.splice(_indexEnv, 1);
        });
 
        if(_exFolders)
        {
            options.excludeFolders.forEach((folder)=>
            {
-                _envPatterns.push(`${_dirname}/${folder}/**`);
+                _envRegExPatterns.push(`${_dirname}/${folder}/**`);
            });
        };
 
@@ -165,10 +166,10 @@ module.exports = function ()
        {
            options.excludeFiles.forEach((file)=>
            {
-                _envPatterns.push(`/**/${file}`);
+                _envRegExPatterns.push(`/**/${file}`);
            });
        };
-       return _envPatterns;
+       return _envRegExPatterns;
    };
     
     /**
@@ -198,9 +199,9 @@ module.exports = function ()
     function _getEnvPatterns(options)
     {
         let tmpListPattern = [];
-        let _envPatternsIsOK = (options && typeof options.types !== 'undefined' && Object.prototype.toString.call(options.envPatterns) == '[object Array]' && options.envPatterns.length > 0);
-        let _patterns = _envPatternsIsOK ? options.envPatterns : ['pro','pre','int','dev'];
-        _patterns.forEach((_envOption)=>
+        let _envRegExPatternsIsOK = (options && typeof options.types !== 'undefined' && Object.prototype.toString.call(options.envPatterns) == '[object Array]' && options.envPatterns.length > 0);
+        _envSelections=_envRegExPatternsIsOK?options.envPatterns:['prod','pre','int','dev'];
+        _envSelections.forEach(( _envOption )=>
         {
             _types.forEach((_type)=>
             {
@@ -267,7 +268,7 @@ module.exports = function ()
         _dirname = _getDirname(options);
         _types = _getTypes(options);
         _dEnv = _setDefaultEnv(options);
-        _envPatterns = _getEnvPatterns(options);
+        _envRegExPatterns = _getEnvPatterns(options);
         _env = _getEnvironment(options);
         _files = _getPathFiles(options);
         _envName = _setInstanceName(options);
@@ -410,7 +411,7 @@ module.exports = function ()
         {
             if(done)
             {
-                return done( new Error('global.env doesn´t exist, initializes envpro first.'), null );
+                return done( new Error('global.env doesn´t exist, initializes goenv first.'), null );
             };
         };
     };

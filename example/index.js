@@ -1,4 +1,4 @@
-const goenv = require('goenv');
+const goenv = require('../index.js');
 
 //const env = goenv.init();
 //By default get all your .json files in this folder to compose the env config.
@@ -13,7 +13,7 @@ const options =
         dirname: __dirname,
         defaultEnv:'dev',
         envName: 'nodeRocks-1.0',
-        envPatterns:['dev','int','pre', 'pro'],
+        envPatterns:['dev','int','pre', 'prod'],
         types:['json','js'],
         excludeFiles:['package.json','index.js'],
         excludeFolders:['node_modules']
