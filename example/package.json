@@ -1,15 +1,15 @@
 {
-  "name": "example",
-  "version": "1.0.3",
+  "name": "goenv-examples",
+  "version": "1.0.4",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "NODE_ENV=prod node ./index.js"
+    "start": "NODE_ENV=dev node ./index.js"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "goenv": "^1.0.7"
+    "goenv": "^1.0.8"
   }
 }

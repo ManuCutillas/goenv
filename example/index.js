@@ -1,10 +1,10 @@
-const goenv = require('../index.js');
+const goenv = require('goenv');
 
 //const env = goenv.init();
 //By default get all your .json files in this folder to compose the env config.
 
 /* ====================================
-          INIT METHOD
+          METHOD TO INIT
 =======================================*/
 const options = 
 {
@@ -24,7 +24,7 @@ console.log('initial',global.env);
 
 
 /* ====================================
-          EXTEND METHOD
+          METHOD TO EXTEND
 =======================================*/
 const optionsExtend = 
 {
@@ -42,7 +42,7 @@ console.log('extended',global.env);
 
 
 /* ====================================
-          writeEnvFile METHOD
+           METHOD TO writeEnvFile
 =======================================*/
 //Write your config in a unique json file by default with env name in this path.
 /*goenv.writeEnvFile((err,done)=> 
@@ -63,15 +63,13 @@ let optionsWriteFile ={
 
 goenv.writeEnvFile(optionsWriteFile, (err,done)=> 
 {
-        if(err)
-        {
-                console.log(err);
-        };
-        console.log(done);
+    if(err) console.log(err);
+
+    console.log(done);
 });
 
 /* ====================================
-         DELETE PROPS METHOD
+         METHOD TO DELETE PROPS
 =======================================*/
 const deleteOptions = {
         global: true,
@@ -82,8 +80,7 @@ const deleteOptions = {
 const deleted = goenv.deleteProps(deleteOptions);
 
 /* ====================================
-         PRINT ENVS
+         PRINT FINAL ENVS
 =======================================*/
 console.log('global env ===============>', global['nodeRocks-1.0']);
-let pro = 'nodeRocks-1.0';
-console.log('process env ===============>' ,JSON.parse(process.env[pro.toUpperCase()]));
+console.log('process env ===============>' ,JSON.parse(process.env['nodeRocks-1.0'.toUpperCase()]));

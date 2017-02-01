@@ -1,0 +1,10 @@
+{
+  "server": {
+    "ide": {
+      "protocol": "http",
+      "hostname": "localhost",
+      "port": 4200,
+      "version": "1.0.0"
+    }
+  }
+}
